@@ -1,0 +1,83 @@
+const {
+    createUserService,
+    getAllUserService,
+    getAUserService,
+    updateUserService,
+    deleteUserService,
+    filterUserService,
+    searchUserService,
+    loginService,
+    logoutService
+} = require("../services/userService");
+
+
+
+module.exports = {
+    //Tạo mới 1 User
+    createUserController: async (req, res) => {
+        let data = await createUserService(req, res);
+        return data;
+    },
+
+
+    //Lấy Tất cả User
+    getAllUserController: async (req, res) => {
+        let data = await getAllUserService(req, res);
+        return data;
+    },
+
+
+    //Lấy Chi tiết 1 User
+    getAUserController: async (req, res) => {
+        const data = await getAUserService(req, res);
+        return data;
+    },
+
+
+    //Sửa 1 User
+    updateUserController: async (req, res) => {
+        let data = await updateUserService(req, res);
+        return data;
+    },
+
+
+    //Xóa 1 User
+    deleteUserController: async (req, res) => {
+        let data = await deleteUserService(req, res);
+        return data;
+    },
+
+
+    //Lọc User theo role
+    filterUserController: async (req, res) => {
+        let data = await filterUserService(req, res);
+        return data;
+    },
+
+
+    //Tìm kiếm User theo Email
+    searchUserController: async (req, res) => {
+        let data = await searchUserService(req, res);
+        return data;
+    },
+
+
+    // loginController: async (req, res) => {
+    //     let data = await loginService(req, res);
+    //     return data;
+    // },
+
+
+    // logoutController: async (req, res) => {
+    //     try {
+    //         let result = await logoutService(req.body);
+
+    //         return res.status(200).json(result)
+    //     } catch (error) {
+    //         return res.status(500).json({
+    //             errMsg: "Error Server!"
+    //         })
+    //     }
+    // },
+
+}
