@@ -10,38 +10,32 @@ const {
     deleteUserController,
     filterUserController,
     searchUserController,
-    // loginController,
-    // logoutController
+    registerController,
+    loginController,
+    logoutController
 } = require('../controllers/userController');
 
 
 
-//Tạo Mới 1 User
 router.post('/users', createUserController);
 
-//Lấy Tất Cả User
 router.get('/users', getAllUserController);
 
-//Lấy Chi Tiết 1 User
 router.get('/users/:id', getAUserController);
 
-//Chỉnh Sửa 1 User
 router.put('/users/:id', updateUserController);
 
-//Xóa 1 User
 router.delete('/users/:id', deleteUserController);
 
-//Lọc User Theo Role
 router.post('/users/filter', filterUserController);
 
-//Tìm Kiếm User Theo Email
 router.post('/users/search', searchUserController);
 
-//Đăng Nhập 
-// router.post('/login', loginController);
+router.post('/register', registerController);
 
-//Đăng Xuất
-// router.post('/logout', logoutController);
+router.post('/login', loginController);
+
+router.post('/logout', logoutController);
 
 
 module.exports = router;

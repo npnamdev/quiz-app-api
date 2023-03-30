@@ -8,8 +8,7 @@ var jwt = require('jsonwebtoken');
 module.exports = {
     //Create A User
     createUserService: async (req, res) => {
-        const { username, email, password, role } = req.body;
-
+        const { username, email, password, phone, address, role } = req.body;
         try {
             const checkEmail = await User.findOne({ email });
 
@@ -27,7 +26,7 @@ module.exports = {
             }
 
             let result = await User.create({
-                username, email, password, role,
+                username, email, password, phone, address, role,
                 avatar: imageURL
             });
 
@@ -152,13 +151,26 @@ module.exports = {
 
     //Filter User
     filterUserService: async (req, res) => {
-        const { page, limit, filter } = req.query;
+        const { page, limit, keyword } = req.query;
         const skip = (page - 1) * limit;
 
         try {
-            if (filter === "all" || filter === "") {
+            if (keyword == "") {
                 let totalUsers = await User.find({}).countDocuments();
                 let result = await User.find({})
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
+                return res.status(200).json({
+                    EC: 0,
+                    EM: "Filter User Success",
+                    totalUsers,
+                    totalPages: Math.ceil(totalUsers / limit),
+                    DT: result
+                })
+            } else {
+                let totalUsers = await User.find({ role: keyword }).countDocuments();
+                let result = await User.find({ role: keyword })
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit);
@@ -170,16 +182,47 @@ module.exports = {
                     totalPages: Math.ceil(totalUsers / limit),
                     DT: result
                 })
-            } else {
-                let totalUsers = await User.find({ role: filter }).countDocuments();
-                let result = await User.find({ role: filter })
+            }
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+                EC: -1,
+                EM: "Error Server!"
+            });
+        }
+    },
+
+
+    //Search User
+    searchUserService: async (req, res) => {
+        const { page, limit, keyword } = req.query;
+        const skip = (page - 1) * limit;
+
+        try {
+            if (keyword) {
+                let totalUsers = await User.find({ email: new RegExp(`^${keyword}`) }).countDocuments();
+                let result = await User.find({ email: new RegExp(`^${keyword}`) })
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit);
 
                 return res.status(200).json({
                     EC: 0,
-                    EM: "Filter User Success",
+                    EM: "Search User Success",
+                    totalUsers,
+                    totalPages: Math.ceil(totalUsers / limit),
+                    DT: result
+                })
+            } else {
+                let totalUsers = await User.find({}).countDocuments();
+                let result = await User.find({})
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
+
+                return res.status(200).json({
+                    EC: 0,
+                    EM: "Search User Success",
                     totalUsers,
                     totalPages: Math.ceil(totalUsers / limit),
                     DT: result
@@ -194,41 +237,37 @@ module.exports = {
     },
 
 
-    //Search User
-    searchUserService: async (req, res) => {
-        const { page, limit, search } = req.query;
-        const skip = (page - 1) * limit;
+
+    registerService: async (req, res) => {
+        const { username, email, password } = req.body;
 
         try {
-            if (search) {
-                let totalUsers = await User.find({ email: new RegExp(`^${search}`) }).countDocuments();
-                let result = await User.find({ email: new RegExp(`^${search}`) })
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(limit);
+            const checkEmail = await User.findOne({ email });
 
-                return res.status(200).json({
-                    EC: 0,
-                    EM: "Search User Success",
-                    totalUsers,
-                    totalPages: Math.ceil(totalUsers / limit),
-                    DT: result
-                })
-            } else {
-                let totalUsers = await User.find({}).countDocuments();
-                let result = await User.find({})
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(limit);
-
-                return res.status(200).json({
-                    EC: 0,
-                    EM: "Search User Success",
-                    totalUsers,
-                    totalPages: Math.ceil(totalUsers / limit),
-                    DT: result
+            if (checkEmail) {
+                return res.status(500).json({
+                    EC: -1,
+                    EM: "Email Already Exists!"
                 })
             }
+
+            let imageURL = '';
+            if (req.files && req.files.avatar) {
+                imageURL = await uploadSingleFileImage(req.files.avatar);
+                imageURL = `http://${process.env.HOST_NAME}:${process.env.PORT}/images/${imageURL.path}`;
+            }
+
+            let result = await User.create({
+                username, email, password,
+                avatar: imageURL
+            });
+
+
+            return res.status(200).json({
+                EC: 0,
+                EM: "Register Success",
+                DT: result
+            })
         } catch (error) {
             return res.status(500).json({
                 EC: -1,
@@ -240,83 +279,68 @@ module.exports = {
 
 
     // //Login
-    // loginService: async (req, res) => {
-    //     const { email, password } = req.body;
-    //     try {
-    //         let result = "";
+    loginService: async (req, res) => {
+        const { email, password } = req.body;
+        try {
+            const user = await User.findOne({ email });
+            if (!user) {
+                return res.status(500).json({
+                    EC: -1,
+                    EM: 'Email does not exist!'
+                })
+            }
 
-    //         const user = await User.findOne({ email });
-    //         if (!user) {
-    //             result = {
-    //                 errCode: -1,
-    //                 errMsg: 'Email does not exist!'
-    //             }
-    //             return result;
-    //         }
+            const checkPass = await bcrypt.compare(password, user.password);
+            if (!checkPass) {
+                return res.status(500).json({
+                    EC: -1,
+                    EM: 'Incorrect password!'
+                })
+            }
 
-    //         const checkPass = await bcrypt.compare(password, user.password);
-    //         if (!checkPass) {
-    //             result = {
-    //                 errCode: -1,
-    //                 errMsg: 'Incorrect password!'
-    //             }
-    //             return result;
-    //         }
+            let accessToken = createAccessToken({
+                userId: user._id
+            });
 
-    //         const payload = {
-    //             userId: user._id
-    //         };
+            let refreshToken = createRefreshToken({
+                userId: user._id
+            });
 
-    //         let accessToken = createAccessToken(payload);
-    //         let refreshToken = createRefreshToken(payload);
-
-    //         result = {
-    //             accessToken,
-    //             refreshToken,
-    //             username: user.username,
-    //             image: user.image,
-    //             errCode: 0,
-    //             errMsg: 'Login Success'
-    //         }
-
-    //         return result;
-
-    //     } catch (error) {
-    //         return res.status(500).json({
-    //             EC: -1,
-    //             EM: "Error Server!"
-    //         });
-    //     }
-    // },
+            return res.status(200).json({
+                EC: 0,
+                EM: "Search User Success",
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                accessToken,
+                refreshToken,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                EC: -1,
+                EM: "Error Server!"
+            });
+        }
+    },
 
 
 
 
-    // logoutService: async (dataBody) => {
-    //     const { refreshToken } = dataBody;
 
-    //     let key = process.env.JWT_SECRET_LOGOUT;
+    logoutService: async (req, res) => {
+        const { refreshToken } = req.body;
+        try {
+            jwt.verify(refreshToken, process.env.JWT_SECRET_LOGOUT)
 
-    //     let decoded = jwt.verify(refreshToken, key);
-
-
-    //     const user = await User.findOne({ _id: decoded.userId });
-
-    //     let result = "";
-
-    //     if (!user) {
-    //         result = {
-    //             errCode: -1,
-    //             errMsg: 'User not found!'
-    //         }
-    //         return result;
-    //     }
-
-    //     result = {
-    //         errCode: 0,
-    //         errMsg: 'Logout Success'
-    //     }
-    //     return result;
-    // },
-
+            return res.status(200).json({
+                EC: 0,
+                EM: 'Logout Success'
+            })
+        } catch (error) {
+            return res.status(500).json({
+                EC: -1,
+                EM: "Error Server!"
+            });
+        }
+    },
 }

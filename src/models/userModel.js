@@ -2,12 +2,13 @@ const mongoose = require('mongoose');
 const mongoose_delete = require('mongoose-delete');
 const bcrypt = require('bcrypt');
 
-
 const userSchema = new mongoose.Schema(
     {
         username: { type: String, required: true, lowercase: true },
         email: { type: String, required: true, lowercase: true },
         password: { type: String, required: true },
+        phone: { type: String },
+        address: { type: String },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         avatar: { type: String }
     },
@@ -27,7 +28,7 @@ userSchema.pre('save', async function (next) {
 
 
 //Mã hóa password khi Chỉnh Sửa Người dùng
-userSchema.pre('updateOne', async function (next) {
+userSchema.pre('findOneAndUpdate', async function (next) {
     if (this._update.password) {
         this._update.password = await bcrypt.hash(this._update.password, 10);
     }

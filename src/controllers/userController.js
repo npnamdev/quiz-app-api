@@ -6,6 +6,7 @@ const {
     deleteUserService,
     filterUserService,
     searchUserService,
+    registerService,
     loginService,
     logoutService
 } = require("../services/userService");
@@ -55,6 +56,12 @@ module.exports = {
     },
 
 
+    registerController: async (req, res) => {
+        let data = await registerService(req, res);
+        return data;
+    },
+
+
     //Tìm kiếm User theo Email
     searchUserController: async (req, res) => {
         let data = await searchUserService(req, res);
@@ -62,22 +69,15 @@ module.exports = {
     },
 
 
-    // loginController: async (req, res) => {
-    //     let data = await loginService(req, res);
-    //     return data;
-    // },
+    loginController: async (req, res) => {
+        let data = await loginService(req, res);
+        return data;
+    },
 
 
-    // logoutController: async (req, res) => {
-    //     try {
-    //         let result = await logoutService(req.body);
-
-    //         return res.status(200).json(result)
-    //     } catch (error) {
-    //         return res.status(500).json({
-    //             errMsg: "Error Server!"
-    //         })
-    //     }
-    // },
+    logoutController: async (req, res) => {
+        let data = await logoutService(req, res);
+        return data;
+    },
 
 }

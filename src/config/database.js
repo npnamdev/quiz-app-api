@@ -1,6 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-
+mongoose.set('strictQuery', false);
 
 var dbState = [{
     value: 0,
