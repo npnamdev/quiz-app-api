@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+
 
 const uploadSingleFileImage = async (fileObject) => {
     //Đường dẫn thư mục lưu trữ ảnh
@@ -29,5 +31,16 @@ const uploadSingleFileImage = async (fileObject) => {
     }
 }
 
-module.exports = { uploadSingleFileImage }
+
+// Hàm xóa ảnh
+const deleteImage = async (imagePath) => {
+    try {
+        // Xóa ảnh từ đường dẫn
+        await fs.promises.unlink(imagePath);
+    } catch (error) {
+        console.log('Error deleting image: ', imagePath, error);
+    }
+}
+
+module.exports = { uploadSingleFileImage, deleteImage }
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const { createUserValidation, updateUserValidation, validateUser } = require('../middlewares/validateUser')
 
 const {
     createUserController,
@@ -17,13 +17,13 @@ const {
 
 
 
-router.post('/users', createUserController);
+router.post('/users', createUserValidation, validateUser, createUserController);
 
 router.get('/users', getAllUserController);
 
 router.get('/users/:id', getAUserController);
 
-router.put('/users/:id', updateUserController);
+router.put('/users/:id', updateUserValidation, validateUser, updateUserController);
 
 router.delete('/users/:id', deleteUserController);
 

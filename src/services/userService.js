@@ -1,21 +1,33 @@
 const User = require("../models/userModel");
-const { uploadSingleFileImage } = require('../helpers/uploadFile');
-const { createAccessToken, createRefreshToken, verifyRefreshToken } = require('../middlewares/JwtToken');
+const { uploadSingleFileImage, deleteImage } = require('../helpers/uploadFile');
+const { createAccessToken, createRefreshToken } = require('../middlewares/JwtToken');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
+const Joi = require('joi');
 
 module.exports = {
     //Create A User
     createUserService: async (req, res) => {
         const { username, email, password, phone, address, role } = req.body;
-        try {
-            const checkEmail = await User.findOne({ email });
+        const checkEmail = Joi.string().email({ minDomainSegments: 2 }).required();
+        const checkPassword = Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'));
 
-            if (checkEmail) {
-                return res.status(500).json({
+
+        try {
+            const validateEmail = checkEmail.validate(email);
+            const validatePassword = checkPassword.validate(password);
+            if (validateEmail.error) {
+                return res.status(401).json({
                     EC: -1,
-                    EM: "Email Already Exists!"
+                    EM: validateEmail.error.details[0].message
+                })
+            }
+
+            if (validatePassword.error) {
+                return res.status(401).json({
+                    EC: -1,
+                    EM: validatePassword.error.details[0].message
                 })
             }
 
@@ -29,8 +41,6 @@ module.exports = {
                 username, email, password, phone, address, role,
                 avatar: imageURL
             });
-
-
             return res.status(200).json({
                 EC: 0,
                 EM: "Create User Success",
@@ -96,7 +106,7 @@ module.exports = {
 
     //Update A User
     updateUserService: async (req, res) => {
-        const { username, password, role } = req.body;
+        const { username, password, phone, address, role } = req.body;
         try {
             const user = await User.findById(req.params.id);
             console.log(user);
@@ -105,16 +115,23 @@ module.exports = {
             if (req.files && req.files.avatar) {
                 imageURL = await uploadSingleFileImage(req.files.avatar);
                 imageURL = `http://${process.env.HOST_NAME}:${process.env.PORT}/images/${imageURL.path}`;
+            } else {
+                imageURL = null;
             }
 
             let result = await User.findOneAndUpdate(
                 { _id: req.params.id },
                 {
-                    username, password, role,
+                    username, password, role, phone, address,
                     avatar: imageURL === user.image ? user.image : imageURL
                 },
                 { new: true }
             );
+
+            if (imageURL === null) {
+                await deleteImage(user.image);
+            }
+
 
             return res.status(200).json({
                 EC: 0,
