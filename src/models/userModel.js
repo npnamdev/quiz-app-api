@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema(
         phone: { type: String },
         address: { type: String },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
-        avatar: { type: String }
+        avatar: { type: String },
+        posts: [{ type: mongoose.Types.ObjectId, ref: 'Post' }]
     },
     {
         timestamps: true,

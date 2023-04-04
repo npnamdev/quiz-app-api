@@ -43,7 +43,7 @@ const updateUserValidation = [
 ];
 
 
-// Middleware để validate dữ liệu người dùng
+// Middleware để nhả lỗi validate
 const validateUser = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

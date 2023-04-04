@@ -4,8 +4,6 @@ const {
     getAUserService,
     updateUserService,
     deleteUserService,
-    filterUserService,
-    searchUserService,
     registerService,
     loginService,
     logoutService
@@ -49,22 +47,8 @@ module.exports = {
     },
 
 
-    //Lọc User theo role
-    filterUserController: async (req, res) => {
-        let data = await filterUserService(req, res);
-        return data;
-    },
-
-
     registerController: async (req, res) => {
         let data = await registerService(req, res);
-        return data;
-    },
-
-
-    //Tìm kiếm User theo Email
-    searchUserController: async (req, res) => {
-        let data = await searchUserService(req, res);
         return data;
     },
 

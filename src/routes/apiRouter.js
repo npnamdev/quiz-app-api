@@ -8,8 +8,6 @@ const {
     getAUserController,
     updateUserController,
     deleteUserController,
-    filterUserController,
-    searchUserController,
     registerController,
     loginController,
     logoutController
@@ -27,15 +25,60 @@ router.put('/users/:id', updateUserValidation, validateUser, updateUserControlle
 
 router.delete('/users/:id', deleteUserController);
 
-router.post('/users/filter', filterUserController);
-
-router.post('/users/search', searchUserController);
-
 router.post('/register', registerController);
 
 router.post('/login', loginController);
 
 router.post('/logout', logoutController);
+
+
+// ====================================================
+
+
+const {
+    createCategoryController,
+    getAllCategoryController,
+    updateCategoryController,
+    deleteCategoryController
+} = require('../controllers/categoryController');
+
+
+
+//Router User Controller
+
+router.post('/categorys', createCategoryController);
+
+router.get('/categorys', getAllCategoryController);
+
+router.put('/categorys/:id', updateCategoryController);
+
+router.delete('/categorys/:id', deleteCategoryController);
+
+
+
+// =========================================
+
+const {
+    createPostController,
+    getAllPostController,
+    getAPostController,
+    updatePostController,
+    deletePostController
+} = require('../controllers/postController');
+
+
+
+//Router Post Controller
+
+router.post('/posts', createPostController);
+
+router.get('/posts', getAllPostController);
+
+router.get('/posts/:id', getAPostController);
+
+router.put('/posts/:id', updatePostController);
+
+router.delete('/posts/:id', deletePostController);
 
 
 module.exports = router;

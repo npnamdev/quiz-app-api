@@ -58,23 +58,78 @@ module.exports = {
 
     //Get All User
     getAllUserService: async (req, res) => {
-        const { page, limit } = req.query;
+        const { page, limit, search, filter } = req.query;
         const skip = (page - 1) * limit;
         let totalUsers = await User.countDocuments();
 
         try {
-            let result = await User.find({})
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit);
+            if (search && !filter) {
+                let totalUsers = await User.find({ email: new RegExp(`^${search}`) }).countDocuments();
+                let result = await User.find({ email: new RegExp(`^${search}`) })
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
 
-            return res.status(200).json({
-                EC: 0,
-                EM: "Get All User Success",
-                totalUsers,
-                totalPages: Math.ceil(totalUsers / limit),
-                DT: result
-            })
+                return res.status(200).json({
+                    EC: 0,
+                    EM: "Search User Success",
+                    totalUsers,
+                    totalPages: Math.ceil(totalUsers / limit),
+                    DT: result
+                })
+            } else if (filter && !search) {
+                let totalUsers = await User.find({ role: filter }).countDocuments();
+                let result = await User.find({ role: filter })
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
+
+                return res.status(200).json({
+                    EC: 0,
+                    EM: "Filter User Success",
+                    totalUsers,
+                    totalPages: Math.ceil(totalUsers / limit),
+                    DT: result
+                })
+            } else if (search && filter) {
+                let totalUsers = await User.find({
+                    $and: [
+                        { email: new RegExp(`^${search}`) },
+                        { role: filter }
+                    ]
+                }).countDocuments();
+
+                let result = await User.find({
+                    $and: [
+                        { email: new RegExp(`^${search}`) },
+                        { role: filter }
+                    ]
+                })
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
+
+                return res.status(200).json({
+                    EC: 0,
+                    EM: "Filter & Search User Success",
+                    totalUsers,
+                    totalPages: Math.ceil(totalUsers / limit),
+                    DT: result
+                })
+            } else {
+                let result = await User.find({})
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
+
+                return res.status(200).json({
+                    EC: 0,
+                    EM: "Get All User Success",
+                    totalUsers,
+                    totalPages: Math.ceil(totalUsers / limit),
+                    DT: result
+                })
+            }
         } catch (error) {
             return res.status(500).json({
                 EC: -1,
@@ -82,7 +137,6 @@ module.exports = {
             });
         }
     },
-
 
 
     //Get A User
@@ -166,97 +220,9 @@ module.exports = {
     },
 
 
-    //Filter User
-    filterUserService: async (req, res) => {
-        const { page, limit, keyword } = req.query;
-        const skip = (page - 1) * limit;
-
-        try {
-            if (keyword == "") {
-                let totalUsers = await User.find({}).countDocuments();
-                let result = await User.find({})
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(limit);
-                return res.status(200).json({
-                    EC: 0,
-                    EM: "Filter User Success",
-                    totalUsers,
-                    totalPages: Math.ceil(totalUsers / limit),
-                    DT: result
-                })
-            } else {
-                let totalUsers = await User.find({ role: keyword }).countDocuments();
-                let result = await User.find({ role: keyword })
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(limit);
-
-                return res.status(200).json({
-                    EC: 0,
-                    EM: "Filter User Success",
-                    totalUsers,
-                    totalPages: Math.ceil(totalUsers / limit),
-                    DT: result
-                })
-            }
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({
-                EC: -1,
-                EM: "Error Server!"
-            });
-        }
-    },
-
-
-    //Search User
-    searchUserService: async (req, res) => {
-        const { page, limit, keyword } = req.query;
-        const skip = (page - 1) * limit;
-
-        try {
-            if (keyword) {
-                let totalUsers = await User.find({ email: new RegExp(`^${keyword}`) }).countDocuments();
-                let result = await User.find({ email: new RegExp(`^${keyword}`) })
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(limit);
-
-                return res.status(200).json({
-                    EC: 0,
-                    EM: "Search User Success",
-                    totalUsers,
-                    totalPages: Math.ceil(totalUsers / limit),
-                    DT: result
-                })
-            } else {
-                let totalUsers = await User.find({}).countDocuments();
-                let result = await User.find({})
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(limit);
-
-                return res.status(200).json({
-                    EC: 0,
-                    EM: "Search User Success",
-                    totalUsers,
-                    totalPages: Math.ceil(totalUsers / limit),
-                    DT: result
-                })
-            }
-        } catch (error) {
-            return res.status(500).json({
-                EC: -1,
-                EM: "Error Server!"
-            });
-        }
-    },
-
-
 
     registerService: async (req, res) => {
-        const { username, email, password } = req.body;
+        const { username, email, password, phone, address } = req.body;
 
         try {
             const checkEmail = await User.findOne({ email });
@@ -275,7 +241,7 @@ module.exports = {
             }
 
             let result = await User.create({
-                username, email, password,
+                username, email, password, phone, address,
                 avatar: imageURL
             });
 
