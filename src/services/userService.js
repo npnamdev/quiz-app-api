@@ -291,12 +291,18 @@ module.exports = {
 
             return res.status(200).json({
                 EC: 0,
-                EM: "Search User Success",
-                username: user.username,
-                email: user.email,
-                avatar: user.avatar,
-                accessToken,
-                refreshToken,
+                EM: "Login Success",
+                DT: {
+                    username: user.username,
+                    email: user.email,
+                    password: user.password,
+                    phone: user.phone,
+                    address: user.address,
+                    avatar: user.avatar,
+                    role: user.role,
+                    accessToken,
+                    refreshToken,
+                }
             })
         } catch (error) {
             return res.status(500).json({

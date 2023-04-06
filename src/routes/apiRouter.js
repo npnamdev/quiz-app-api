@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createUserValidation, updateUserValidation, validateUser } = require('../middlewares/validateUser')
+const authenticateUser = require('../middlewares/authenticateUser');
 
 const {
     createUserController,
@@ -15,15 +16,27 @@ const {
 
 
 
-router.post('/users', createUserValidation, validateUser, createUserController);
+router.post(
+    '/users',
+    authenticateUser,
+    createUserValidation,
+    validateUser,
+    createUserController
+);
 
 router.get('/users', getAllUserController);
 
 router.get('/users/:id', getAUserController);
 
-router.put('/users/:id', updateUserValidation, validateUser, updateUserController);
+router.put(
+    '/users/:id',
+    authenticateUser,
+    updateUserValidation,
+    validateUser,
+    updateUserController
+);
 
-router.delete('/users/:id', deleteUserController);
+router.delete('/users/:id', authenticateUser, deleteUserController);
 
 router.post('/register', registerController);
 
@@ -45,14 +58,13 @@ const {
 
 
 //Router User Controller
-
-router.post('/categorys', createCategoryController);
+router.post('/categorys', authenticateUser, createCategoryController);
 
 router.get('/categorys', getAllCategoryController);
 
-router.put('/categorys/:id', updateCategoryController);
+router.put('/categorys/:id', authenticateUser, updateCategoryController);
 
-router.delete('/categorys/:id', deleteCategoryController);
+router.delete('/categorys/:id', authenticateUser, deleteCategoryController);
 
 
 
@@ -70,15 +82,15 @@ const {
 
 //Router Post Controller
 
-router.post('/posts', createPostController);
+router.post('/posts', authenticateUser, createPostController);
 
 router.get('/posts', getAllPostController);
 
-router.get('/posts/:id', getAPostController);
+router.get('/posts/:id', authenticateUser, getAPostController);
 
-router.put('/posts/:id', updatePostController);
+router.put('/posts/:id', authenticateUser, updatePostController);
 
-router.delete('/posts/:id', deletePostController);
+router.delete('/posts/:id', authenticateUser, deletePostController);
 
 
 module.exports = router;

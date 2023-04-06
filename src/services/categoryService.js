@@ -24,9 +24,9 @@ module.exports = {
 
     //Create Category
     createCategoryService: async (req, res) => {
-        const { name } = req.body;
+        const { name, description } = req.body;
         try {
-            let result = await Category.create({ name });
+            let result = await Category.create({ name, description });
 
             return res.status(200).json({
                 EC: 0,
@@ -47,11 +47,11 @@ module.exports = {
     //Update Category
     updateCategoryService: async (req, res) => {
         const { id } = req.params;
-        const { name } = req.body;
+        const { name, description } = req.body;
         try {
             let result = await Category.findOneAndUpdate(
                 { _id: id },
-                { name },
+                { name, description },
                 { new: true }
             );
 

@@ -5,6 +5,46 @@ const { uploadSingleFileImage } = require('../helpers/uploadFile');
 
 
 module.exports = {
+    //Create Post
+    createPostService: async (req, res) => {
+        const { title, description, content, categoryId } = req.body;
+
+        console.log(req.user);
+        try {
+            let imageURL = '';
+            if (req.files && req.files.image) {
+                imageURL = await uploadSingleFileImage(req.files.image);
+                imageURL = `http://${process.env.HOST_NAME}:${process.env.PORT}/images/${imageURL.path}`;
+            }
+
+            let result = await Post.create({
+                title,
+                description,
+                content,
+                author: req.user,
+                category: categoryId,
+                image: imageURL
+            });
+
+            await User.findByIdAndUpdate(req.user, { $push: { posts: result._id } });
+
+            await Category.findByIdAndUpdate(categoryId, { $push: { posts: result._id } });
+
+            return res.status(200).json({
+                EC: 0,
+                EM: "Create A Post Success",
+                DT: result
+            })
+        } catch (error) {
+            return res.status(500).json({
+                EC: -1,
+                EM: "Error Server!"
+            });
+        }
+    },
+
+
+
     //Get All Post
     getAllPostService: async (req, res) => {
         const { page, limit } = req.query;
@@ -54,52 +94,15 @@ module.exports = {
     },
 
 
-    //Create Post
-    createPostService: async (req, res) => {
-        const { title, description, content, authorId, categoryId } = req.body;
-
-        try {
-            let imageURL = '';
-            if (req.files && req.files.image) {
-                imageURL = await uploadSingleFileImage(req.files.image);
-                imageURL = `http://${process.env.HOST_NAME}:${process.env.PORT}/images/${imageURL.path}`;
-            }
-
-            let result = await Post.create({
-                title,
-                description,
-                content,
-                author: authorId,
-                category: categoryId,
-                image: imageURL
-            });
-
-            await User.findByIdAndUpdate(authorId, { $push: { posts: result._id } });
-
-            await Category.findByIdAndUpdate(categoryId, { $push: { posts: result._id } });
-
-            return res.status(200).json({
-                EC: 0,
-                EM: "Create A Post Success",
-                DT: result
-            })
-        } catch (error) {
-            return res.status(500).json({
-                EC: -1,
-                EM: "Error Server!"
-            });
-        }
-    },
 
 
     //Update User
     updatePostService: async (req, res) => {
         const { id } = req.params;
-        const { title, description, content, authorId, categoryId } = req.body;
+        const { title, description, content, categoryId } = req.body;
 
         try {
             const post = await Post.findById(id);
-
             let imageURL = post.image;
             if (req.files && req.files.image) {
                 const newImageURL = await uploadSingleFileImage(req.files.image);
@@ -107,7 +110,6 @@ module.exports = {
             }
 
             const oldCategory = post.category;
-            const oldAuthor = post.author;
 
             // Xóa bài post cũ trong danh mục
             await Category.findByIdAndUpdate(
@@ -116,33 +118,15 @@ module.exports = {
                 { new: true }
             );
 
-            // Xóa bài post cũ trong danh sách post của tác giả
-            await User.findByIdAndUpdate(
-                oldAuthor,
-                { $pull: { posts: post._id } },
-                { new: true }
-            );
-
-
             let result = await Post.findByIdAndUpdate(
                 id,
                 {
                     title,
                     description,
                     content,
-                    author: authorId,
                     category: categoryId,
                     image: imageURL === post.image ? post.image : imageURL,
                 }, { new: true }
-            );
-
-
-
-            // Cập nhật danh sách post trong UserSchema
-            await User.findByIdAndUpdate(
-                authorId,
-                { $addToSet: { posts: result._id } },
-                { new: true }
             );
 
 

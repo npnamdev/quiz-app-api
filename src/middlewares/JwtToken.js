@@ -7,9 +7,10 @@ const createAccessToken = (pl) => {
     let payload = pl;
     let key = process.env.JWT_SECRET_LOGIN;
     let token = null;
+    const expiresIn = '1h';
 
     try {
-        token = jwt.sign(payload, key);
+        token = jwt.sign(payload, key, { expiresIn });
     } catch (err) {
         console.log(err);
     }
@@ -36,7 +37,7 @@ const createRefreshToken = (pl) => {
 
 
 const verifyRefreshToken = (token) => {
-    let key = process.env.JWT_SECRET_LOGOUT;
+    let key = process.env.JWT_SECRET_LOGIN;
     let data = null;
     try {
         let decoded = jwt.verify(token, key);
