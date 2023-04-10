@@ -53,18 +53,21 @@ module.exports = {
 
         try {
             let result = await Post.find({})
+                .populate("author")
+                .populate("category")
+
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-
             return res.status(200).json({
                 EC: 0,
                 EM: "Get All Post Success",
                 totalPost,
-                totalPages: Math.ceil(totalPost / limit),
-                DT: result
+                totalPage: Math.ceil(totalPost / limit),
+                DT: result,
             })
         } catch (error) {
+            console.log(error);
             return res.status(500).json({
                 EC: -1,
                 EM: "Error Server!"
@@ -76,9 +79,8 @@ module.exports = {
 
     //Get A Post
     getAPostService: async (req, res) => {
-        const { id } = req.params;
         try {
-            let result = await Post.find({ _id: id });
+            let result = await Post.find({ _id: req.params.id });
 
             return res.status(200).json({
                 EC: 0,

@@ -51,16 +51,19 @@ router.post('/logout', logoutController);
 const {
     createCategoryController,
     getAllCategoryController,
+    getACategoryController,
     updateCategoryController,
     deleteCategoryController
 } = require('../controllers/categoryController');
 
 
 
-//Router User Controller
+//Router Category Controller
 router.post('/categorys', authenticateUser, createCategoryController);
 
 router.get('/categorys', getAllCategoryController);
+
+router.get('/categorys/:id', getACategoryController);
 
 router.put('/categorys/:id', authenticateUser, updateCategoryController);
 
@@ -86,7 +89,7 @@ router.post('/posts', authenticateUser, createPostController);
 
 router.get('/posts', getAllPostController);
 
-router.get('/posts/:id', authenticateUser, getAPostController);
+router.get('/posts/:id', getAPostController);
 
 router.put('/posts/:id', authenticateUser, updatePostController);
 

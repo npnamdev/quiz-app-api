@@ -20,6 +20,24 @@ module.exports = {
         }
     },
 
+    //Get a Category
+    getACategorysService: async (req, res) => {
+        try {
+            let result = await Category.find({ _id: req.params.id }).sort({ createdAt: -1 })
+
+            return res.status(200).json({
+                EC: 0,
+                EM: "Get A Category Success",
+                DT: result
+            })
+        } catch (error) {
+            return res.status(500).json({
+                EC: -1,
+                EM: "Error Server!"
+            });
+        }
+    },
+
 
 
     //Create Category

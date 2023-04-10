@@ -1,6 +1,7 @@
 const {
     createCategoryService,
     getAllCategorysService,
+    getACategorysService,
     updateCategoryService,
     deleteCategoryService
 } = require("../services/categoryService");
@@ -9,6 +10,11 @@ module.exports = {
     //Get Category
     getAllCategoryController: async (req, res) => {
         let data = await getAllCategorysService(req, res);
+        return data;
+    },
+
+    getACategoryController: async (req, res) => {
+        let data = await getACategorysService(req, res);
         return data;
     },
 

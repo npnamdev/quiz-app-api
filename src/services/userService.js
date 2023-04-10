@@ -293,6 +293,7 @@ module.exports = {
                 EC: 0,
                 EM: "Login Success",
                 DT: {
+                    id: user._id,
                     username: user.username,
                     email: user.email,
                     password: user.password,

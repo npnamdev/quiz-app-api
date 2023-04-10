@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const mongoose_delete = require('mongoose-delete');
 
-const CategorySchema = new mongoose.Schema(
+const categorySchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
         description: { type: String },
@@ -13,8 +13,8 @@ const CategorySchema = new mongoose.Schema(
 )
 
 
-CategorySchema.plugin(mongoose_delete, { overrideMethods: 'all' });
+categorySchema.plugin(mongoose_delete, { overrideMethods: 'all' });
 
-const Category = mongoose.model('Category  ', CategorySchema);
+const Category = mongoose.model('Category', categorySchema);
 
 module.exports = Category;
