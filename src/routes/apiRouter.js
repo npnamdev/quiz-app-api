@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createUserValidation, updateUserValidation, validateUser } = require('../middlewares/validateUser')
+const { validateUserCreation, validateUserUpdate, validateUserRegistration } = require('../middlewares/validateUserInput')
 const authenticateUser = require('../middlewares/authenticateUser');
 
 const {
@@ -19,8 +19,7 @@ const {
 router.post(
     '/users',
     authenticateUser,
-    createUserValidation,
-    validateUser,
+    validateUserCreation,
     createUserController
 );
 
@@ -31,18 +30,17 @@ router.get('/users/:id', getAUserController);
 router.put(
     '/users/:id',
     authenticateUser,
-    updateUserValidation,
-    validateUser,
+    validateUserUpdate,
     updateUserController
 );
 
 router.delete('/users/:id', authenticateUser, deleteUserController);
 
-router.post('/register', registerController);
+router.post('/register', validateUserRegistration, registerController);
 
 router.post('/login', loginController);
 
-router.post('/logout', logoutController);
+router.post('/logout', authenticateUser, logoutController);
 
 
 // ====================================================

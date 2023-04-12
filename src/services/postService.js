@@ -9,7 +9,6 @@ module.exports = {
     createPostService: async (req, res) => {
         const { title, description, content, categoryId } = req.body;
 
-        console.log(req.user);
         try {
             let imageURL = '';
             if (req.files && req.files.image) {
@@ -36,9 +35,10 @@ module.exports = {
                 DT: result
             })
         } catch (error) {
+            console.log(error);
             return res.status(500).json({
                 EC: -1,
-                EM: "Error Server!"
+                EM: "Error Server2!"
             });
         }
     },
@@ -67,7 +67,6 @@ module.exports = {
                 DT: result,
             })
         } catch (error) {
-            console.log(error);
             return res.status(500).json({
                 EC: -1,
                 EM: "Error Server!"

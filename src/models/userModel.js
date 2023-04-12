@@ -19,24 +19,6 @@ const userSchema = new mongoose.Schema(
 )
 
 
-//Mã hóa password khi Tạo Mới Người dùng
-userSchema.pre('save', async function (next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 10);
-    }
-    next();
-});
-
-
-//Mã hóa password khi Chỉnh Sửa Người dùng
-userSchema.pre('findOneAndUpdate', async function (next) {
-    if (this._update.password) {
-        this._update.password = await bcrypt.hash(this._update.password, 10);
-    }
-    next();
-});
-
-
 userSchema.plugin(mongoose_delete, { overrideMethods: 'all' });
 
 const User = mongoose.model('User', userSchema);

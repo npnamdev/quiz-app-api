@@ -36,7 +36,9 @@ const uploadSingleFileImage = async (fileObject) => {
 const deleteImage = async (imagePath) => {
     try {
         // Xóa ảnh từ đường dẫn
-        await fs.promises.unlink(imagePath);
+        if (imagePath) {
+            await fs.promises.unlink(imagePath);
+        }
     } catch (error) {
         console.log('Error deleting image: ', imagePath, error);
     }
