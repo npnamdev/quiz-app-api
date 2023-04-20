@@ -5,6 +5,7 @@ const categorySchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
         description: { type: String },
+        slug: { type: String },
         posts: [{ type: mongoose.Types.ObjectId, ref: 'Post' }]
     },
     {

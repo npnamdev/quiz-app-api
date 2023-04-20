@@ -4,12 +4,21 @@ require('dotenv').config();
 module.exports = {
     //Get Category
     getAllCategorysService: async (req, res) => {
+        const { page, limit } = req.query;
+        const skip = (page - 1) * limit;
+        let totalCategory = await Category.countDocuments();
         try {
-            let result = await Category.find({}).sort({ createdAt: -1 })
+            let result = await Category.find({})
+                .populate('posts')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
 
             return res.status(200).json({
                 EC: 0,
                 EM: "Get All Category Success",
+                totalCategory,
+                totalPages: Math.ceil(totalCategory / limit),
                 DT: result
             })
         } catch (error) {
@@ -20,10 +29,11 @@ module.exports = {
         }
     },
 
+
     //Get a Category
     getACategorysService: async (req, res) => {
         try {
-            let result = await Category.find({ _id: req.params.id }).sort({ createdAt: -1 })
+            let result = await Category.find({ _id: req.params.id }).populate('posts').sort({ createdAt: -1 })
 
             return res.status(200).json({
                 EC: 0,
@@ -42,9 +52,9 @@ module.exports = {
 
     //Create Category
     createCategoryService: async (req, res) => {
-        const { name, description } = req.body;
+        const { name, description, slug } = req.body;
         try {
-            let result = await Category.create({ name, description });
+            let result = await Category.create({ name, description, slug });
 
             return res.status(200).json({
                 EC: 0,
@@ -65,11 +75,11 @@ module.exports = {
     //Update Category
     updateCategoryService: async (req, res) => {
         const { id } = req.params;
-        const { name, description } = req.body;
+        const { name, description, slug } = req.body;
         try {
             let result = await Category.findOneAndUpdate(
                 { _id: id },
-                { name, description },
+                { name, description, slug },
                 { new: true }
             );
 

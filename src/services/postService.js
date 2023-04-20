@@ -8,7 +8,6 @@ module.exports = {
     //Create Post
     createPostService: async (req, res) => {
         const { title, description, content, categoryId } = req.body;
-
         try {
             let imageURL = '';
             if (req.files && req.files.image) {
@@ -16,11 +15,19 @@ module.exports = {
                 imageURL = `http://${process.env.HOST_NAME}:${process.env.PORT}/images/${imageURL.path}`;
             }
 
+            const category = await Category.findById({ _id: categoryId });
+            if (!category) {
+                return res.status(500).json({
+                    EC: -1,
+                    EM: "directory does not exist!"
+                });
+            }
+
             let result = await Post.create({
                 title,
                 description,
                 content,
-                author: req.user,
+                author: req.user._id,
                 category: categoryId,
                 image: imageURL
             });
@@ -35,38 +42,6 @@ module.exports = {
                 DT: result
             })
         } catch (error) {
-            console.log(error);
-            return res.status(500).json({
-                EC: -1,
-                EM: "Error Server2!"
-            });
-        }
-    },
-
-
-
-    //Get All Post
-    getAllPostService: async (req, res) => {
-        const { page, limit } = req.query;
-        const skip = (page - 1) * limit;
-        let totalPost = await Post.countDocuments();
-
-        try {
-            let result = await Post.find({})
-                .populate("author")
-                .populate("category")
-
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit);
-            return res.status(200).json({
-                EC: 0,
-                EM: "Get All Post Success",
-                totalPost,
-                totalPage: Math.ceil(totalPost / limit),
-                DT: result,
-            })
-        } catch (error) {
             return res.status(500).json({
                 EC: -1,
                 EM: "Error Server!"
@@ -76,10 +51,54 @@ module.exports = {
 
 
 
+    //Get All Post
+    getAllPostService: async (req, res) => {
+        const { page, limit, search, filter } = req.query;
+        const skip = (page - 1) * limit;
+        try {
+            const category = await Category.findOne({ name: filter });
+            const filterQuery = filter ? { category: category._id } : {};
+            const searchQuery = search ? { $or: [{ title: new RegExp(`^${search}`) }, { description: new RegExp(`^${search}`) }] } : {};
+
+            const query = {
+                ...filterQuery,
+                ...searchQuery
+            };
+
+            const totalPost = await Post.countDocuments(query);
+
+            const result = await Post.find(query)
+                .populate("author", "username")
+                .populate("category", "name")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            return res.status(200).json({
+                EC: 0,
+                EM: "Get All Post Success",
+                totalPost,
+                totalPage: Math.ceil(totalPost / limit),
+                DT: result,
+            });
+        } catch (error) {
+            return res.status(500).json({
+                EC: -1,
+                EM: "Error Server!",
+            });
+        }
+    },
+
+
+
+
     //Get A Post
     getAPostService: async (req, res) => {
         try {
-            let result = await Post.find({ _id: req.params.id });
+            let result = await Post.find({ _id: req.params.id })
+                .populate("author", ["username", "avatar"])
+                .populate("category", "name")
+                ;
 
             return res.status(200).json({
                 EC: 0,
@@ -130,14 +149,12 @@ module.exports = {
                 }, { new: true }
             );
 
-
             // Cập nhật danh sách post trong CategorySchema
             await Category.findByIdAndUpdate(
                 categoryId,
                 { $addToSet: { posts: result._id } },
                 { new: true }
             );
-
 
             return res.status(200).json({
                 EC: 0,

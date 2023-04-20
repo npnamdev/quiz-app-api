@@ -7,6 +7,13 @@ const {
 } = require("../services/categoryService");
 
 module.exports = {
+    //Create Category
+    createCategoryController: async (req, res) => {
+        let data = await createCategoryService(req, res);
+        return data;
+    },
+
+
     //Get Category
     getAllCategoryController: async (req, res) => {
         let data = await getAllCategorysService(req, res);
@@ -15,13 +22,6 @@ module.exports = {
 
     getACategoryController: async (req, res) => {
         let data = await getACategorysService(req, res);
-        return data;
-    },
-
-
-    //Create Category
-    createCategoryController: async (req, res) => {
-        let data = await createCategoryService(req, res);
         return data;
     },
 

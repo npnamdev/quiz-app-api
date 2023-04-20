@@ -2,9 +2,8 @@ const User = require("../models/userModel");
 require('dotenv').config();
 const { uploadSingleFileImage, deleteImage } = require('../helpers/uploadFile');
 const bcrypt = require('bcrypt');
-
 var jwt = require('jsonwebtoken');
-const { createAccessToken } = require('../middlewares/JwtToken');
+
 
 module.exports = {
     createUserService: async (req, res) => {
@@ -188,19 +187,30 @@ module.exports = {
                     EM: 'Incorrect password!'
                 });
             }
-            const accessToken = await createAccessToken({ userId: user?._id });
+
+            // Create AccessToken
+            const accessToken = jwt.sign(
+                { userId: user._id },
+                process.env.JWT_SECRET_KEY,
+                { expiresIn: '1h' }
+            );
+
+
+            // Save accessToken to user's token array in the database
+            user.tokens.push({ token: accessToken });
+            await user.save();
+
             return res.status(200).json({
                 EC: 0,
                 EM: 'Login Success',
                 DT: {
-                    id: user?._id,
-                    username: user?.username,
-                    email: user?.email,
-                    password: user?.password,
-                    phone: user?.phone,
-                    address: user?.address,
-                    avatar: user?.avatar,
-                    role: user?.role,
+                    id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    phone: user.phone,
+                    address: user.address,
+                    avatar: user.avatar,
+                    role: user.role,
                     accessToken,
                 }
             });
@@ -213,39 +223,30 @@ module.exports = {
     },
 
 
-    // logoutService: async (req, res) => {
-    //     try {
-    //         jwt.verify(req.token, process.env.JWT_SECRET_LOGIN);
+    //API logout
+    logoutService: async (req, res) => {
+        try {
+            // Get the current user's accessToken
+            const user = req.user;
+            const accessToken = user.tokens[user.tokens.length - 1].token;
 
-    //         res.status(200).json({
-    //             EC: 0,
-    //             EM: 'Logout successfully'
-    //         });
-    //     } catch (error) {
-    //         console.log(error);
-    //         res.status(500).json({
-    //             EC: -1,
-    //             EM: 'Error Server!'
-    //         });
-    //     }
-    // }
+            // Revoke the current accessToken
+            await User.updateOne({ _id: user._id, 'tokens.token': accessToken }, { $set: { 'tokens.$.isRevoked': true } });
 
+            // Remove the current accessToken from the user object
+            user.tokens = user.tokens.filter(token => token.token !== req.token);
+            await user.save();
 
-    // logoutService: async (req, res) => {
-    //     const { refreshToken } = req.body;
-    //     try {
-    //         jwt.verify(refreshToken, process.env.JWT_SECRET_LOGOUT)
-
-    //         return res.status(200).json({
-    //             EC: 0,
-    //             EM: 'Logout Success'
-    //         })
-    //     } catch (error) {
-    //         return res.status(500).json({
-    //             EC: -1,
-    //             EM: "Error Server!"
-    //         });
-    //     }
-    // },
+            return res.status(200).json({
+                EC: 0,
+                EM: 'Logged out successfully'
+            });
+        } catch (error) {
+            return res.status(500).json({
+                EC: -1,
+                EM: 'Error Server!'
+            });
+        }
+    },
 
 }

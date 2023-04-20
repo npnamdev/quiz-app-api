@@ -6,7 +6,7 @@ const User = require("../models/userModel");
 // Validate API CreateUser
 const validateUserCreation = [
     body('username')
-        .isLength({ min: 6, max: 15 })
+        .isLength({ min: 5, max: 15 })
         .withMessage('Username must be between 6 and 15 characters!'),
     body('email')
         .isEmail()
@@ -42,7 +42,7 @@ const validateUserCreation = [
 // Validate API UpdateUser
 const validateUserUpdate = [
     body('username')
-        .isLength({ min: 6, max: 15 })
+        .isLength({ min: 5, max: 15 })
         .withMessage('Username must be between 6 and 15 characters!'),
     body('email')
         .optional()
@@ -91,7 +91,7 @@ const validateUserUpdate = [
 // Validate API Register
 const validateUserRegistration = [
     body('username')
-        .isLength({ min: 6, max: 15 })
+        .isLength({ min: 5, max: 15 })
         .withMessage('Username must be between 6 and 15 characters!'),
     body('email')
         .isEmail()

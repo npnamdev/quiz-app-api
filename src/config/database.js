@@ -32,7 +32,5 @@ const connection = async () => {
     console.log(dbState.find(f => f.value == state).label, "to db");
 }
 
-
-
 module.exports = connection;
 
